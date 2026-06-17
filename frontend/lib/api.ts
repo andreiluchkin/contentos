@@ -12,7 +12,6 @@ export const api = axios.create({
 })
 
 // --- Ideas ---
-
 export const ideasApi = {
   list: (params?: Record<string, string>) =>
     api.get("/ideas", { params }).then((r) => r.data),
@@ -26,7 +25,6 @@ export const ideasApi = {
 }
 
 // --- Posts ---
-
 export const postsApi = {
   list: (params?: Record<string, string | undefined>) =>
     api.get("/posts", { params }).then((r) => r.data),
@@ -44,10 +42,11 @@ export const postsApi = {
   delete: (id: string) => api.delete(`/posts/${id}`),
   duplicate: (id: string) => api.post(`/posts/${id}/duplicate`).then((r) => r.data),
   history: (id: string) => api.get(`/posts/${id}/history`).then((r) => r.data),
+  batchGenerate: (data: Record<string, unknown>) =>
+    api.post("/posts/batch-generate", data).then((r) => r.data),
 }
 
 // --- AI ---
-
 export const aiApi = {
   generateDirect: (data: Record<string, unknown>) =>
     api.post("/ai/generate-post", data).then((r) => r.data),
@@ -61,8 +60,20 @@ export const aiApi = {
     api.post("/ai/score", { body, platform }).then((r) => r.data),
 }
 
-// --- Pillars ---
+// --- Calendar ---
+export const calendarApi = {
+  month: (year: number, month: number, platform?: string) =>
+    api.get("/calendar/month", { params: { year, month, platform } }).then((r) => r.data),
+  day: (date: string) =>
+    api.get(`/calendar/day/${date}`).then((r) => r.data),
+  week: (year: number, week: number) =>
+    api.get("/calendar/week", { params: { year, week } }).then((r) => r.data),
+  gaps: () => api.get("/calendar/gaps").then((r) => r.data),
+  nextSlot: (accountId: string, after?: string) =>
+    api.get("/calendar/next-slot", { params: { account_id: accountId, after } }).then((r) => r.data),
+}
 
+// --- Pillars ---
 export const pillarsApi = {
   list: () => api.get("/pillars").then((r) => r.data),
   create: (data: Record<string, unknown>) =>
@@ -73,7 +84,6 @@ export const pillarsApi = {
 }
 
 // --- Accounts ---
-
 export const accountsApi = {
   list: () => api.get("/accounts").then((r) => r.data),
   addTelegram: (data: Record<string, unknown>) =>

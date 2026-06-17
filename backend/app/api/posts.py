@@ -10,6 +10,8 @@ from ..database import get_db
 from ..models import Post, SocialAccount, ScheduleSlot
 from ..models.enums import PipelineStatus
 from ..schemas import PostCreate, PostUpdate, PostOut, PostStatusUpdate, PostSchedule, BatchGenerateRequest
+from ..models import Idea
+from ..models.enums import ContentType
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -245,11 +247,68 @@ async def get_post_history(post_id: uuid.UUID, db: AsyncSession = Depends(get_db
     return {"post_id": str(post_id), "history": post.body_history}
 
 
+class BatchGenerateFullRequest(BatchGenerateRequest):
+    account_id: uuid.UUID
+    content_type: str | None = None  # если None — берём из suggested_content_type идеи
+
+
 @router.post("/batch-generate", status_code=202, dependencies=[Depends(require_auth)])
-async def batch_generate(data: BatchGenerateRequest, db: AsyncSession = Depends(get_db)):
-    """Ставит в очередь генерацию постов для пачки одобренных идей. Реализуется в Итерации 3."""
+async def batch_generate(data: BatchGenerateFullRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Batch Mode: создаёт Post для каждой одобренной идеи и запускает генерацию.
+    Возвращает список созданных post_id и task_id для polling.
+    """
+    account = await db.get(SocialAccount, data.account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    created_posts = []
+    skipped = []
+
+    for idea_id in data.idea_ids:
+        idea = await db.get(Idea, idea_id)
+        if not idea:
+            skipped.append({"idea_id": str(idea_id), "reason": "not found"})
+            continue
+        if idea.status != PipelineStatus.IDEA_APPROVED:
+            skipped.append({"idea_id": str(idea_id), "reason": f"status is {idea.status}"})
+            continue
+
+        content_type = (
+            data.content_type
+            or idea.suggested_content_type
+            or "opinion"
+        )
+
+        post = Post(
+            idea_id=idea_id,
+            account_id=data.account_id,
+            pillar_id=idea.pillar_id,
+            platform=account.platform,
+            content_type=content_type,
+            body="",
+            status=PipelineStatus.IDEA_APPROVED,
+        )
+        db.add(post)
+        created_posts.append(post)
+
+    await db.commit()
+    for post in created_posts:
+        await db.refresh(post)
+
+    # Запускаем генерацию для каждого поста через Celery
+    from ..tasks.generation import generate_post
+    task_ids = []
+    for post in created_posts:
+        task = generate_post.delay(str(post.id))
+        task_ids.append(task.id)
+
     return {
         "status": "queued",
-        "idea_count": len(data.idea_ids),
-        "message": "Batch generation will be available in iteration 3 (AI module)",
+        "created_count": len(created_posts),
+        "skipped_count": len(skipped),
+        "post_ids": [str(p.id) for p in created_posts],
+        "task_ids": task_ids,
+        "skipped": skipped,
+        "estimated_seconds": len(created_posts) * 12,
     }

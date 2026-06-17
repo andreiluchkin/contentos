@@ -11,6 +11,7 @@ app = Celery(
         "app.tasks.publish",
         "app.tasks.accounts",
         "app.tasks.generation",
+        "app.tasks.feedback",
     ],
 )
 
@@ -31,6 +32,16 @@ app.conf.update(
         "refresh-expiring-tokens": {
             "task": "app.tasks.accounts.refresh_expiring_tokens",
             "schedule": crontab(minute=0),
+        },
+        # Еженедельная обратная связь — понедельник 08:00 UTC
+        "send-weekly-feedback": {
+            "task": "app.tasks.feedback.send_weekly_feedback",
+            "schedule": crontab(day_of_week=1, hour=8, minute=0),
+        },
+        # Проверка пустых дней — каждое утро 07:00 UTC
+        "check-content-gaps": {
+            "task": "app.tasks.feedback.check_content_gaps",
+            "schedule": crontab(hour=7, minute=0),
         },
     },
 )

@@ -9,6 +9,7 @@ import {
   Calendar,
   Repeat2,
   Mic2,
+  BookOpen,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: "/calendar", icon: Calendar, label: "Календарь" },
   { href: "/repurpose", icon: Repeat2, label: "Repurpose" },
   { href: "/brand-voice", icon: Mic2, label: "Brand Voice" },
+  { href: "/knowledge-base", icon: BookOpen, label: "База знаний" },
 ]
 
 export function Sidebar() {

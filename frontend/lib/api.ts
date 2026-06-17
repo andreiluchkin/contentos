@@ -93,6 +93,35 @@ export const accountsApi = {
   delete: (id: string) => api.delete(`/accounts/${id}`),
 }
 
+// --- Brand Voice ---
+export const brandVoiceApi = {
+  get: () => api.get("/brand-voice").then((r) => r.data),
+  update: (data: Record<string, unknown>) =>
+    api.put("/brand-voice", data).then((r) => r.data),
+  addExample: (text: string, platform: string) =>
+    api.post("/brand-voice/example-posts", { text, platform }).then((r) => r.data),
+  deleteExample: (index: number) =>
+    api.delete(`/brand-voice/example-posts/${index}`).then((r) => r.data),
+  regeneratePrompt: () =>
+    api.post("/brand-voice/regenerate-prompt").then((r) => r.data),
+}
+
+// --- Knowledge Base ---
+export const kbApi = {
+  list: (params?: Record<string, string | undefined>) =>
+    api.get("/kb", { params }).then((r) => r.data),
+  get: (id: string) => api.get(`/kb/${id}`).then((r) => r.data),
+  create: (data: Record<string, unknown>) =>
+    api.post("/kb", data).then((r) => r.data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.put(`/kb/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/kb/${id}`),
+  search: (query: string, limit = 5) =>
+    api.post("/kb/search", { query, limit }).then((r) => r.data),
+  importPost: (postId: string) =>
+    api.post(`/kb/import-post/${postId}`).then((r) => r.data),
+}
+
 // --- Repurpose ---
 export const repurposeApi = {
   list: () => api.get("/repurpose").then((r) => r.data),

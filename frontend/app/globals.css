@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+    background-color: #f2f1f3;
+    color: #19171c;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #d4d1d9;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b8b4bf;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-card rounded-card shadow-card;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white px-5 py-2.5 rounded-button text-sm font-medium
+           shadow-button transition-all duration-150
+           hover:bg-[#6b35d1] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-ink px-5 py-2.5 rounded-button text-sm font-medium
+           border border-border shadow-sm transition-all duration-150
+           hover:border-border-strong hover:shadow-md active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-ink-secondary px-3 py-2 rounded-nav text-sm font-medium
+           transition-all duration-150 hover:bg-black/5 active:scale-[0.98];
+  }
+
+  .input-base {
+    @apply w-full bg-white border border-border rounded-input px-4 py-2.5 text-sm
+           text-ink placeholder:text-ink-secondary outline-none
+           focus:border-accent focus:ring-2 focus:ring-accent/20
+           transition-all duration-150;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-badge text-xs font-medium;
+  }
+
+  .platform-chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-badge text-xs font-medium
+           bg-white border border-border text-ink;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2 rounded-nav text-sm font-medium text-ink-secondary
+           transition-all duration-150 hover:bg-black/5 hover:text-ink;
+  }
+
+  .sidebar-link-active {
+    @apply bg-accent-light text-accent hover:bg-accent-light hover:text-accent;
+  }
+}

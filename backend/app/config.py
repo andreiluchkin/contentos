@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     whisper_mode: str = "api"  # "api" | "local"
     whisper_local_model: str = "base"
 
+    # TikTok OAuth
+    tiktok_client_key: str = ""
+    tiktok_client_secret: str = ""
+
+    # Google / YouTube OAuth
+    google_client_id: str = ""
+    google_client_secret: str = ""
+
     # Auth
     api_secret_token: str = "dev-token"
 

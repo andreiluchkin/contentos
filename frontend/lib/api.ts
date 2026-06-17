@@ -90,6 +90,12 @@ export const accountsApi = {
     api.post("/accounts/telegram", data).then((r) => r.data),
   addInstagram: (data: Record<string, unknown>) =>
     api.post("/accounts/instagram", data).then((r) => r.data),
+  addTikTok: (data: Record<string, unknown>) =>
+    api.post("/accounts/tiktok", data).then((r) => r.data),
+  addYouTube: (data: Record<string, unknown>) =>
+    api.post("/accounts/youtube", data).then((r) => r.data),
+  refreshToken: (id: string) =>
+    api.post(`/accounts/${id}/refresh-token`).then((r) => r.data),
   delete: (id: string) => api.delete(`/accounts/${id}`),
 }
 

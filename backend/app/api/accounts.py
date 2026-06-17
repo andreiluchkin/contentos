@@ -10,7 +10,7 @@ from ..database import get_db
 from ..models import SocialAccount
 from ..models.enums import Platform
 from ..schemas import AccountTelegramCreate, AccountOut, AccountUpdateTimes
-from ..schemas.account import AccountInstagramCreate
+from ..schemas.account import AccountInstagramCreate, AccountTikTokCreate, AccountYouTubeCreate
 from ..adapters.registry import registry
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
@@ -104,6 +104,66 @@ async def add_instagram_account(data: AccountInstagramCreate, db: AsyncSession =
             "ig_user_id": data.ig_user_id,
             "facebook_page_id": data.facebook_page_id,
         },
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.post("/tiktok", response_model=AccountOut, status_code=201, dependencies=[Depends(require_auth)])
+async def add_tiktok_account(data: AccountTikTokCreate, db: AsyncSession = Depends(get_db)):
+    adapter = registry.get("tiktok")
+    temp = SocialAccount(
+        platform="tiktok", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        platform_meta={"open_id": data.open_id, "refresh_token": data.refresh_token},
+    )
+    if not await adapter.validate_account(temp):
+        raise HTTPException(status_code=400, detail="Invalid TikTok access token")
+
+    existing = await db.execute(
+        select(SocialAccount).where(SocialAccount.platform == "tiktok", SocialAccount.handle == data.handle)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail=f"TikTok @{data.handle} already connected")
+
+    from datetime import datetime, timezone, timedelta
+    account = SocialAccount(
+        platform="tiktok", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        token_expires_at=datetime.now(timezone.utc) + timedelta(days=1),
+        platform_meta={"open_id": data.open_id, "refresh_token": data.refresh_token},
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.post("/youtube", response_model=AccountOut, status_code=201, dependencies=[Depends(require_auth)])
+async def add_youtube_account(data: AccountYouTubeCreate, db: AsyncSession = Depends(get_db)):
+    adapter = registry.get("youtube")
+    temp = SocialAccount(
+        platform="youtube", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        platform_meta={"channel_id": data.channel_id, "refresh_token": data.refresh_token},
+    )
+    if not await adapter.validate_account(temp):
+        raise HTTPException(status_code=400, detail="Invalid YouTube access token")
+
+    existing = await db.execute(
+        select(SocialAccount).where(SocialAccount.platform == "youtube", SocialAccount.handle == data.handle)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail=f"YouTube @{data.handle} already connected")
+
+    from datetime import datetime, timezone, timedelta
+    account = SocialAccount(
+        platform="youtube", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        token_expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        platform_meta={"channel_id": data.channel_id, "refresh_token": data.refresh_token},
     )
     db.add(account)
     await db.commit()

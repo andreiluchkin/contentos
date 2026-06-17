@@ -21,6 +21,22 @@ class AccountInstagramCreate(BaseModel):
     facebook_page_id: str | None = Field(None, description="Facebook Page ID (опционально, для расширенных метрик)")
 
 
+class AccountTikTokCreate(BaseModel):
+    handle: str = Field(..., description="TikTok username (без @)")
+    display_name: str
+    access_token: str = Field(..., description="TikTok OAuth2 Access Token")
+    refresh_token: str = Field(..., description="TikTok OAuth2 Refresh Token")
+    open_id: str = Field(..., description="TikTok Open ID пользователя")
+
+
+class AccountYouTubeCreate(BaseModel):
+    handle: str = Field(..., description="YouTube channel handle или ID")
+    display_name: str
+    access_token: str = Field(..., description="Google OAuth2 Access Token")
+    refresh_token: str = Field(..., description="Google OAuth2 Refresh Token")
+    channel_id: str = Field(..., description="YouTube Channel ID (UC...)")
+
+
 class AccountUpdateTimes(BaseModel):
     optimal_posting_times: dict[str, str] = Field(
         ...,

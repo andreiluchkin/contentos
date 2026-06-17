@@ -1,6 +1,8 @@
 from .base import PlatformAdapter
 from .telegram import TelegramAdapter
 from .instagram import InstagramAdapter
+from .tiktok import TikTokAdapter
+from .youtube import YouTubeAdapter
 
 
 class AdapterRegistry:
@@ -23,3 +25,5 @@ class AdapterRegistry:
 registry = AdapterRegistry()
 registry.register(TelegramAdapter())
 registry.register(InstagramAdapter())
+registry.register(TikTokAdapter())
+registry.register(YouTubeAdapter())

@@ -1,0 +1,38 @@
+# Web framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+psycopg2-binary==2.9.10
+
+# Redis / Celery
+celery==5.4.0
+redis==5.2.1
+flower==2.0.1
+
+# AI
+anthropic==0.40.0
+openai==1.57.0  # для Whisper API
+
+# Storage
+boto3==1.35.82  # MinIO совместим с S3 API
+
+# Config / Utils
+pydantic==2.10.3
+pydantic-settings==2.7.0
+python-jose[cryptography]==3.3.0
+cryptography==44.0.0  # Fernet для токенов
+httpx==0.28.1
+python-dotenv==1.0.1
+
+# Media processing
+yt-dlp==2024.12.13  # YouTube download
+pillow==11.0.0      # изображения
+
+# Dev
+pytest==8.3.4
+pytest-asyncio==0.24.0

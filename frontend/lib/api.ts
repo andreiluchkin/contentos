@@ -92,3 +92,23 @@ export const accountsApi = {
     api.post("/accounts/instagram", data).then((r) => r.data),
   delete: (id: string) => api.delete(`/accounts/${id}`),
 }
+
+// --- Repurpose ---
+export const repurposeApi = {
+  list: () => api.get("/repurpose").then((r) => r.data),
+  get: (id: string) => api.get(`/repurpose/${id}`).then((r) => r.data),
+  uploadFile: (file: File) => {
+    const form = new FormData()
+    form.append("file", file)
+    return api.post("/repurpose/upload", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data)
+  },
+  youtube: (url: string) =>
+    api.post("/repurpose/youtube", { url }).then((r) => r.data),
+  text: (text: string) =>
+    api.post("/repurpose/text", { text }).then((r) => r.data),
+  createPosts: (id: string, data: Record<string, unknown>) =>
+    api.post(`/repurpose/${id}/create-posts`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/repurpose/${id}`),
+}

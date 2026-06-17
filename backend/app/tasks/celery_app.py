@@ -12,6 +12,7 @@ app = Celery(
         "app.tasks.accounts",
         "app.tasks.generation",
         "app.tasks.feedback",
+        "app.tasks.repurpose",
     ],
 )
 

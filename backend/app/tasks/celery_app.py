@@ -10,6 +10,7 @@ app = Celery(
     include=[
         "app.tasks.publish",
         "app.tasks.accounts",
+        "app.tasks.generation",
     ],
 )
 

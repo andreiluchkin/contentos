@@ -6,11 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine
 from .models import Base
+from .api import pillars, accounts, ideas, posts, sources
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Создаём таблицы при старте (только для dev — в prod используем Alembic)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -30,6 +30,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+API_PREFIX = "/api/v1"
+
+app.include_router(pillars.router, prefix=API_PREFIX)
+app.include_router(accounts.router, prefix=API_PREFIX)
+app.include_router(ideas.router, prefix=API_PREFIX)
+app.include_router(posts.router, prefix=API_PREFIX)
+app.include_router(sources.router, prefix=API_PREFIX)
 
 
 @app.get("/health")

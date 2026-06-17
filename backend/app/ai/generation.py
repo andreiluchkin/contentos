@@ -78,7 +78,7 @@ class GenerationService:
 {length_hint}
 
 Ответь ТОЛЬКО текстом поста, без пояснений и без кавычек.
-{"Верни JSON: {\"body\": \"...\", \"hashtags\": [...]}" if platform == "instagram" else "Верни только текст поста."}"""
+{"Верни JSON: {\"body\": \"...\", \"hashtags\": [...]}" if platform == "instagram" else "Для треда разделяй твиты строкой ---. Каждый твит ≤ 280 символов. Верни только текст." if platform == "x" else "Верни только текст поста."}"""
 
         try:
             response = self.client.messages.create(
@@ -104,10 +104,18 @@ class GenerationService:
             except json.JSONDecodeError:
                 pass
 
-        # Для TikTok кладём body в platform_meta.script тоже
         platform_meta = {}
+
+        # TikTok: кладём текст в platform_meta.script
         if platform == "tiktok":
             platform_meta = {"script": raw}
+
+        # X: если в тексте есть разделители "---", собираем тред
+        if platform == "x":
+            parts = [p.strip() for p in raw.split("\n---\n") if p.strip()]
+            if len(parts) > 1:
+                platform_meta = {"thread": parts}
+                raw = parts[0]  # body = первый твит
 
         return GenerationResult(body=raw, hashtags=[], platform_meta=platform_meta)
 

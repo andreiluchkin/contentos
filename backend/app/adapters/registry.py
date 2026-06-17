@@ -3,6 +3,8 @@ from .telegram import TelegramAdapter
 from .instagram import InstagramAdapter
 from .tiktok import TikTokAdapter
 from .youtube import YouTubeAdapter
+from .linkedin import LinkedInAdapter
+from .x import XAdapter
 
 
 class AdapterRegistry:
@@ -27,3 +29,5 @@ registry.register(TelegramAdapter())
 registry.register(InstagramAdapter())
 registry.register(TikTokAdapter())
 registry.register(YouTubeAdapter())
+registry.register(LinkedInAdapter())
+registry.register(XAdapter())

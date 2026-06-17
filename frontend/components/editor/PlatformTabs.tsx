@@ -139,6 +139,16 @@ export function PlatformTabs({
           className="flex-1 resize-none p-5 text-sm text-ink leading-relaxed bg-white outline-none font-ui placeholder:text-ink-secondary disabled:opacity-60"
         />
 
+        {/* X thread hint */}
+        {active === "x" && current.body.length > 0 && (
+          <div className="px-5 py-2.5 border-t border-border bg-canvas shrink-0">
+            <p className="text-[11px] text-ink-secondary">
+              Тред: раздели твиты символом <code className="bg-white border border-border px-1 rounded text-[10px]">---</code>.
+              Каждая часть ≤ 280 символов.
+            </p>
+          </div>
+        )}
+
         {/* Instagram hashtags field */}
         {active === "instagram" && (
           <div className="px-5 py-3 border-t border-border bg-canvas shrink-0">

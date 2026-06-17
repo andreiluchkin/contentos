@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
 
+    # LinkedIn OAuth
+    linkedin_client_id: str = ""
+    linkedin_client_secret: str = ""
+
+    # X (Twitter) OAuth 2.0
+    x_client_id: str = ""
+    x_client_secret: str = ""
+
     # Auth
     api_secret_token: str = "dev-token"
 

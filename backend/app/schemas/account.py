@@ -37,6 +37,22 @@ class AccountYouTubeCreate(BaseModel):
     channel_id: str = Field(..., description="YouTube Channel ID (UC...)")
 
 
+class AccountLinkedInCreate(BaseModel):
+    handle: str = Field(..., description="LinkedIn profile slug или company page")
+    display_name: str
+    access_token: str = Field(..., description="LinkedIn OAuth2 Access Token")
+    refresh_token: str = Field(default="", description="LinkedIn OAuth2 Refresh Token (если есть)")
+    person_urn: str = Field(..., description="urn:li:person:XXXX или urn:li:organization:XXXX")
+
+
+class AccountXCreate(BaseModel):
+    handle: str = Field(..., description="X username (без @)")
+    display_name: str
+    access_token: str = Field(..., description="X OAuth2 Access Token")
+    refresh_token: str = Field(..., description="X OAuth2 Refresh Token")
+    user_id: str = Field(..., description="X numeric User ID")
+
+
 class AccountUpdateTimes(BaseModel):
     optimal_posting_times: dict[str, str] = Field(
         ...,

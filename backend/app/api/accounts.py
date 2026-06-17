@@ -10,7 +10,7 @@ from ..database import get_db
 from ..models import SocialAccount
 from ..models.enums import Platform
 from ..schemas import AccountTelegramCreate, AccountOut, AccountUpdateTimes
-from ..schemas.account import AccountInstagramCreate, AccountTikTokCreate, AccountYouTubeCreate
+from ..schemas.account import AccountInstagramCreate, AccountTikTokCreate, AccountYouTubeCreate, AccountLinkedInCreate, AccountXCreate
 from ..adapters.registry import registry
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
@@ -164,6 +164,66 @@ async def add_youtube_account(data: AccountYouTubeCreate, db: AsyncSession = Dep
         access_token=data.access_token,
         token_expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
         platform_meta={"channel_id": data.channel_id, "refresh_token": data.refresh_token},
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.post("/linkedin", response_model=AccountOut, status_code=201, dependencies=[Depends(require_auth)])
+async def add_linkedin_account(data: AccountLinkedInCreate, db: AsyncSession = Depends(get_db)):
+    adapter = registry.get("linkedin")
+    temp = SocialAccount(
+        platform="linkedin", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        platform_meta={"person_urn": data.person_urn, "refresh_token": data.refresh_token},
+    )
+    if not await adapter.validate_account(temp):
+        raise HTTPException(status_code=400, detail="Invalid LinkedIn access token")
+
+    existing = await db.execute(
+        select(SocialAccount).where(SocialAccount.platform == "linkedin", SocialAccount.handle == data.handle)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail=f"LinkedIn @{data.handle} already connected")
+
+    from datetime import datetime, timezone, timedelta
+    account = SocialAccount(
+        platform="linkedin", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        token_expires_at=datetime.now(timezone.utc) + timedelta(days=60),
+        platform_meta={"person_urn": data.person_urn, "refresh_token": data.refresh_token},
+    )
+    db.add(account)
+    await db.commit()
+    await db.refresh(account)
+    return account
+
+
+@router.post("/x", response_model=AccountOut, status_code=201, dependencies=[Depends(require_auth)])
+async def add_x_account(data: AccountXCreate, db: AsyncSession = Depends(get_db)):
+    adapter = registry.get("x")
+    temp = SocialAccount(
+        platform="x", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        platform_meta={"user_id": data.user_id, "refresh_token": data.refresh_token},
+    )
+    if not await adapter.validate_account(temp):
+        raise HTTPException(status_code=400, detail="Invalid X access token")
+
+    existing = await db.execute(
+        select(SocialAccount).where(SocialAccount.platform == "x", SocialAccount.handle == data.handle)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail=f"X @{data.handle} already connected")
+
+    from datetime import datetime, timezone, timedelta
+    account = SocialAccount(
+        platform="x", handle=data.handle, display_name=data.display_name,
+        access_token=data.access_token,
+        token_expires_at=datetime.now(timezone.utc) + timedelta(hours=2),
+        platform_meta={"user_id": data.user_id, "refresh_token": data.refresh_token},
     )
     db.add(account)
     await db.commit()

@@ -10,7 +10,7 @@ import { PlatformIcon } from "@/components/shared/PlatformIcon"
 import { PLATFORM_LABELS, cn } from "@/lib/utils"
 import type { Platform, SocialAccount } from "@/lib/types"
 
-type ConnectPlatform = "telegram" | "instagram" | "tiktok" | "youtube"
+type ConnectPlatform = "telegram" | "instagram" | "tiktok" | "youtube" | "linkedin" | "x"
 
 interface FormField {
   key: string
@@ -60,9 +60,29 @@ const PLATFORM_FORMS: Record<ConnectPlatform, { fields: FormField[]; guide: stri
       { key: "refresh_token", label: "Refresh Token", placeholder: "1//xxx", type: "password" },
     ],
   },
+  linkedin: {
+    guide: "Создай приложение в LinkedIn Developer Portal, получи токен через OAuth 2.0 (scopes: r_liteprofile, w_member_social)",
+    fields: [
+      { key: "handle", label: "Profile slug", placeholder: "ivan-petrov или company-name" },
+      { key: "display_name", label: "Название", placeholder: "Мой LinkedIn" },
+      { key: "person_urn", label: "Person URN", placeholder: "urn:li:person:XXXXXXXX", hint: "Получи через GET /v2/me после авторизации" },
+      { key: "access_token", label: "Access Token", placeholder: "AQV...", type: "password" },
+      { key: "refresh_token", label: "Refresh Token (если есть)", placeholder: "AQX..." },
+    ],
+  },
+  x: {
+    guide: "Создай проект в X Developer Portal, используй OAuth 2.0 PKCE (scopes: tweet.read, tweet.write, users.read, offline.access)",
+    fields: [
+      { key: "handle", label: "X username", placeholder: "myaccount (без @)" },
+      { key: "display_name", label: "Название", placeholder: "Мой X" },
+      { key: "user_id", label: "User ID", placeholder: "1234567890", hint: "Числовой ID, получи через GET /2/users/me" },
+      { key: "access_token", label: "Access Token", placeholder: "xxx", type: "password" },
+      { key: "refresh_token", label: "Refresh Token", placeholder: "xxx", type: "password" },
+    ],
+  },
 }
 
-const CONNECT_PLATFORMS: ConnectPlatform[] = ["telegram", "instagram", "tiktok", "youtube"]
+const CONNECT_PLATFORMS: ConnectPlatform[] = ["telegram", "instagram", "tiktok", "youtube", "linkedin", "x"]
 
 export default function SettingsPage() {
   const qc = useQueryClient()
@@ -91,6 +111,8 @@ export default function SettingsPage() {
         case "instagram": return accountsApi.addInstagram(values)
         case "tiktok": return accountsApi.addTikTok(values)
         case "youtube": return accountsApi.addYouTube(values)
+        case "linkedin": return accountsApi.addLinkedIn(values)
+        case "x": return accountsApi.addX(values)
       }
     },
     onSuccess: () => {
@@ -199,7 +221,7 @@ export default function SettingsPage() {
         <section className="card">
           <h2 className="text-sm font-semibold text-ink mb-4">Подключить аккаунт</h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
             {CONNECT_PLATFORMS.map((p) => (
               <button
                 key={p}

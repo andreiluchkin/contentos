@@ -13,6 +13,14 @@ class AccountTelegramCreate(BaseModel):
     chat_id: str = Field(..., description="ID канала/чата куда публиковать")
 
 
+class AccountInstagramCreate(BaseModel):
+    handle: str = Field(..., description="Instagram username (без @)")
+    display_name: str
+    access_token: str = Field(..., description="Long-lived Instagram User Access Token")
+    ig_user_id: str = Field(..., description="Instagram User ID (числовой)")
+    facebook_page_id: str | None = Field(None, description="Facebook Page ID (опционально, для расширенных метрик)")
+
+
 class AccountUpdateTimes(BaseModel):
     optimal_posting_times: dict[str, str] = Field(
         ...,

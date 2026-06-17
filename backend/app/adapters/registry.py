@@ -1,5 +1,6 @@
 from .base import PlatformAdapter
 from .telegram import TelegramAdapter
+from .instagram import InstagramAdapter
 
 
 class AdapterRegistry:
@@ -21,3 +22,4 @@ class AdapterRegistry:
 
 registry = AdapterRegistry()
 registry.register(TelegramAdapter())
+registry.register(InstagramAdapter())

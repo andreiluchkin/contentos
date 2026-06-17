@@ -88,5 +88,7 @@ export const accountsApi = {
   list: () => api.get("/accounts").then((r) => r.data),
   addTelegram: (data: Record<string, unknown>) =>
     api.post("/accounts/telegram", data).then((r) => r.data),
+  addInstagram: (data: Record<string, unknown>) =>
+    api.post("/accounts/instagram", data).then((r) => r.data),
   delete: (id: string) => api.delete(`/accounts/${id}`),
 }

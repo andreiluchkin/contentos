@@ -103,6 +103,30 @@ export const accountsApi = {
   delete: (id: string) => api.delete(`/accounts/${id}`),
 }
 
+// --- Media ---
+export const mediaApi = {
+  list: (mediaType?: string) =>
+    api.get("/media", { params: { media_type: mediaType } }).then((r) => r.data),
+  get: (id: string) => api.get(`/media/${id}`).then((r) => r.data),
+  upload: (file: File) => {
+    const form = new FormData()
+    form.append("file", file)
+    return api.post("/media/upload", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data)
+  },
+  delete: (id: string) => api.delete(`/media/${id}`),
+}
+
+// --- Analytics ---
+export const analyticsApi = {
+  overview: () => api.get("/analytics/overview").then((r) => r.data),
+  posts: (params?: Record<string, string | undefined>) =>
+    api.get("/analytics/posts", { params }).then((r) => r.data),
+  pillars: () => api.get("/analytics/pillars").then((r) => r.data),
+  timeline: (days = 30) => api.get("/analytics/timeline", { params: { days } }).then((r) => r.data),
+}
+
 // --- Brand Voice ---
 export const brandVoiceApi = {
   get: () => api.get("/brand-voice").then((r) => r.data),

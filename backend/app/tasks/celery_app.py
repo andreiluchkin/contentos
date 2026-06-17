@@ -13,6 +13,7 @@ app = Celery(
         "app.tasks.generation",
         "app.tasks.feedback",
         "app.tasks.repurpose",
+        "app.tasks.metrics",
     ],
 )
 
@@ -43,6 +44,11 @@ app.conf.update(
         "check-content-gaps": {
             "task": "app.tasks.feedback.check_content_gaps",
             "schedule": crontab(hour=7, minute=0),
+        },
+        # Сбор метрик опубликованных постов каждые 6 часов
+        "collect-metrics": {
+            "task": "app.tasks.metrics.collect_all_metrics",
+            "schedule": crontab(minute=0, hour="*/6"),
         },
     },
 )

@@ -10,6 +10,7 @@ import { PlatformIcon } from "@/components/shared/PlatformIcon"
 import { ContentScorePanel } from "@/components/editor/ContentScorePanel"
 import { PlatformPreview } from "@/components/editor/PlatformPreview"
 import { PlatformTabs } from "@/components/editor/PlatformTabs"
+import { MediaUploader } from "@/components/editor/MediaUploader"
 import { CONTENT_TYPE_LABELS, PLATFORM_LABELS, cn } from "@/lib/utils"
 import type { ContentScore, SocialAccount, Platform } from "@/lib/types"
 
@@ -66,6 +67,7 @@ export default function EditorPage() {
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [generatingPlatform, setGeneratingPlatform] = useState<Platform | null>(null)
+  const [mediaIds, setMediaIds] = useState<string[]>([])
 
   useEffect(() => {
     if (post) {
@@ -74,6 +76,7 @@ export default function EditorPage() {
       setActivePreviewPlatform(post.platform as Platform)
       const extra = getExtraPlatforms(post)
       if (extra.length > 0) setMultiMode(true)
+      setMediaIds((post.media_ids as string[]) ?? [])
       setIsDirty(false)
     }
   }, [post])
@@ -116,6 +119,7 @@ export default function EditorPage() {
         data: {
           body: primaryBody,
           hashtags: primaryHashtags,
+          media_ids: mediaIds,
           platform_meta: {
             ...currentMeta,
             platform_bodies: platformBodiesForMeta,
@@ -299,7 +303,14 @@ export default function EditorPage() {
               disabled={post.status === "published"}
               className="flex-1 resize-none p-5 text-sm text-ink leading-relaxed bg-white outline-none font-ui placeholder:text-ink-secondary disabled:opacity-60"
             />
-            <div className="flex items-center justify-between px-5 py-2.5 border-t border-border bg-white shrink-0">
+            <div className="px-5 py-3 border-t border-border bg-canvas shrink-0">
+              <MediaUploader
+                mediaIds={mediaIds}
+                onChange={(ids) => { setMediaIds(ids); setIsDirty(true) }}
+                maxFiles={primaryPlatform === "instagram" ? 10 : primaryPlatform === "x" ? 4 : 9}
+              />
+            </div>
+          <div className="flex items-center justify-between px-5 py-2.5 border-t border-border bg-white shrink-0">
               <span className={cn(
                 "text-xs tabular-nums",
                 primaryBody.length > 4096 ? "text-red-500" : "text-ink-secondary"

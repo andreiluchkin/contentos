@@ -10,6 +10,7 @@ import {
   Repeat2,
   Mic2,
   BookOpen,
+  BarChart2,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/repurpose", icon: Repeat2, label: "Repurpose" },
   { href: "/brand-voice", icon: Mic2, label: "Brand Voice" },
   { href: "/knowledge-base", icon: BookOpen, label: "База знаний" },
+  { href: "/analytics", icon: BarChart2, label: "Аналитика" },
 ]
 
 export function Sidebar() {

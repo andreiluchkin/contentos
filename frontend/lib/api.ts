@@ -156,6 +156,15 @@ export const kbApi = {
     api.post(`/kb/import-post/${postId}`).then((r) => r.data),
 }
 
+// --- Publishing ---
+export const publishingApi = {
+  publishNow: (id: string) => api.post(`/posts/${id}/publish-now`).then((r) => r.data),
+  approve: (id: string) => api.post(`/posts/${id}/approve`).then((r) => r.data),
+  reject: (id: string, reason?: string) =>
+    api.post(`/posts/${id}/reject`, { reason }).then((r) => r.data),
+  reviewQueue: () => api.get("/posts/review-queue").then((r) => r.data),
+}
+
 // --- Repurpose ---
 export const repurposeApi = {
   list: () => api.get("/repurpose").then((r) => r.data),

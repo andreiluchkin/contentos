@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # Encryption key для токенов соцсетей (Fernet)
     encryption_key: str = ""
 
+    # Telegram Notifications
+    telegram_bot_token: str = ""
+    telegram_notify_chat_id: str = ""
+
     # Frontend
     frontend_url: str = "http://localhost:3000"
 

@@ -14,6 +14,7 @@ app = Celery(
         "app.tasks.feedback",
         "app.tasks.repurpose",
         "app.tasks.metrics",
+        "app.tasks.notifications",
     ],
 )
 
@@ -49,6 +50,11 @@ app.conf.update(
         "collect-metrics": {
             "task": "app.tasks.metrics.collect_all_metrics",
             "schedule": crontab(minute=0, hour="*/6"),
+        },
+        # Ежедневный дайджест — 19:00 UTC
+        "daily-digest": {
+            "task": "app.tasks.notifications.send_daily_digest_task",
+            "schedule": crontab(hour=19, minute=0),
         },
     },
 )

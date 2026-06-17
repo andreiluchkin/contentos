@@ -10,6 +10,7 @@ from ..database import AsyncSessionLocal
 from ..models import Post, SocialAccount
 from ..models.enums import PipelineStatus
 from ..adapters.registry import registry
+from ..services.notifier import notify_published, notify_error
 
 logger = logging.getLogger(__name__)
 
@@ -108,17 +109,26 @@ async def _publish_post(task, post_id: str):
                 post.external_post_id = result.external_post_id
                 post.publish_error = None
                 logger.info("publish_post: published %s → %s", post_id, result.external_post_id)
+                await session.commit()
+                await notify_published(
+                    post_id=post_id,
+                    platform=post.platform,
+                    handle=account.handle,
+                    body_preview=post.body or "",
+                    external_id=result.external_post_id,
+                )
             else:
                 if post.publish_attempts >= 3:
                     post.status = PipelineStatus.ERROR
                     post.publish_error = result.error
                     logger.error("publish_post: max retries reached for %s: %s", post_id, result.error)
+                    await session.commit()
+                    await notify_error(post_id, post.platform, account.handle, result.error or "unknown error")
                 else:
-                    # Статус остаётся SCHEDULED — retry сработает при следующем запуске
                     post.publish_error = result.error
                     logger.warning("publish_post: attempt %d failed for %s: %s",
                                    post.publish_attempts, post_id, result.error)
-            await session.commit()
+                    await session.commit()
 
     except Exception as exc:
         logger.exception("publish_post: unexpected error for %s", post_id)
@@ -128,4 +138,5 @@ async def _publish_post(task, post_id: str):
                 post.status = PipelineStatus.ERROR
                 post.publish_error = str(exc)
                 await session.commit()
+                await notify_error(post_id, post.platform, account.handle if account else "?", str(exc))
         raise task.retry(exc=exc)

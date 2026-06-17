@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Save, Eye, Loader2, Send, Layers } from "lucide-react"
+import { ArrowLeft, Save, Eye, Loader2, Send, Layers, CheckCircle2, Zap } from "lucide-react"
 import { usePost, useUpdatePost, useScorePost, useImprovePost, useAccounts } from "@/lib/queries"
-import { aiApi } from "@/lib/api"
+import { aiApi, publishingApi } from "@/lib/api"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { PlatformIcon } from "@/components/shared/PlatformIcon"
 import { ContentScorePanel } from "@/components/editor/ContentScorePanel"
@@ -54,6 +55,20 @@ export default function EditorPage() {
   const updatePost = useUpdatePost()
   const scorePost = useScorePost()
   const improvePost = useImprovePost()
+  const qc = useQueryClient()
+
+  const approveMutation = useMutation({
+    mutationFn: () => publishingApi.approve(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["post", id] })
+      qc.invalidateQueries({ queryKey: ["review-queue"] })
+    },
+  })
+
+  const publishNowMutation = useMutation({
+    mutationFn: () => publishingApi.publishNow(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["post", id] }),
+  })
 
   // Мультиплатформный стейт
   const [platformBodies, setPlatformBodies] = useState<Record<Platform, string>>({} as Record<Platform, string>)
@@ -268,7 +283,43 @@ export default function EditorPage() {
             <span className="hidden sm:inline">{isDirty ? "Сохранить" : "Сохранено"}</span>
           </button>
 
-          {post.status !== "published" && (
+          {post.status === "review" && (
+            <>
+              <button
+                onClick={() => approveMutation.mutate()}
+                disabled={approveMutation.isPending}
+                className="btn-primary flex items-center gap-1.5 text-sm"
+              >
+                {approveMutation.isPending
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : <CheckCircle2 size={13} />}
+                <span className="hidden sm:inline">Одобрить</span>
+              </button>
+              <button
+                onClick={() => publishNowMutation.mutate()}
+                disabled={publishNowMutation.isPending}
+                className="btn-secondary flex items-center gap-1.5 text-sm"
+              >
+                {publishNowMutation.isPending
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : <Zap size={13} />}
+                <span className="hidden sm:inline">Сейчас</span>
+              </button>
+            </>
+          )}
+          {(post.status === "ready" || post.status === "error") && (
+            <button
+              onClick={() => publishNowMutation.mutate()}
+              disabled={publishNowMutation.isPending}
+              className="btn-primary flex items-center gap-1.5 text-sm"
+            >
+              {publishNowMutation.isPending
+                ? <Loader2 size={13} className="animate-spin" />
+                : <Zap size={13} />}
+              <span className="hidden sm:inline">Опубликовать</span>
+            </button>
+          )}
+          {post.status === "draft" && (
             <button
               onClick={handleSendToReview}
               className="btn-primary flex items-center gap-1.5 text-sm"

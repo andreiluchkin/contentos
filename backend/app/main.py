@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine
 from .models import Base
-from .api import pillars, accounts, ideas, posts, sources, brand_voice, knowledge_base, ai, calendar, repurpose, media, analytics
+from .api import pillars, accounts, ideas, posts, sources, brand_voice, knowledge_base, ai, calendar, repurpose, media, analytics, publishing
 
 
 @asynccontextmanager
@@ -45,6 +45,7 @@ app.include_router(calendar.router, prefix=API_PREFIX)
 app.include_router(repurpose.router, prefix=API_PREFIX)
 app.include_router(media.router, prefix=API_PREFIX)
 app.include_router(analytics.router, prefix=API_PREFIX)
+app.include_router(publishing.router, prefix=API_PREFIX)
 
 
 @app.get("/health")

@@ -118,7 +118,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: https://contentposter.virtualworker.ru
+      NEXT_PUBLIC_API_TOKEN: ${API_SECRET_TOKEN}
     ports:
       - "3000:3000"
     depends_on:

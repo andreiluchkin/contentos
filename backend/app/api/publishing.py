@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from ..database import get_session
+from ..database import get_db as get_session
 from ..models import Post, SocialAccount
 from ..models.enums import PipelineStatus
 from ..auth import require_auth

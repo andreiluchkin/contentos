@@ -121,13 +121,9 @@ services:
       NEXT_PUBLIC_API_URL: https://contentposter.virtualworker.ru
       NEXT_PUBLIC_API_TOKEN: ${API_SECRET_TOKEN}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3001:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
 
 volumes:
   pgdata:

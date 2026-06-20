@@ -17,11 +17,10 @@ class Settings(BaseSettings):
     minio_bucket: str = "contentos"
     minio_secure: bool = False
 
-    # AI
-    anthropic_api_key: str = ""
-    openai_api_key: str = ""
-    whisper_mode: str = "api"  # "api" | "local"
-    whisper_local_model: str = "base"
+    # AI — OpenRouter
+    openrouter_api_key: str = ""
+    openrouter_model: str = "anthropic/claude-sonnet-4-5"
+    whisper_model: str = "base"  # tiny | base | small | medium | large
 
     # TikTok OAuth
     tiktok_client_key: str = ""

@@ -14,9 +14,9 @@ celery==5.4.0
 redis==5.2.1
 flower==2.0.1
 
-# AI
-anthropic==0.40.0
-openai==1.57.0  # для Whisper API
+# AI — OpenRouter (OpenAI-compatible) + local Whisper
+openai==1.57.0  # OpenRouter совместим с OpenAI SDK
+faster-whisper==1.1.1  # локальная транскрипция без внешних API
 
 # Storage
 boto3==1.35.82  # MinIO совместим с S3 API

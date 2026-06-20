@@ -201,14 +201,17 @@ async def _improve_post(post_id: str, issues_to_fix: list[str]):
 
     try:
         from ..ai.generation import GenerationService
+        from ..config import settings as _settings
         svc = GenerationService()
-        response = svc.client.messages.create(
-            model="claude-sonnet-4-6",
+        response = svc.client.chat.completions.create(
+            model=_settings.openrouter_model,
             max_tokens=2000,
-            system=brand_voice_prompt or "Ты профессиональный редактор контента.",
-            messages=[{"role": "user", "content": improve_prompt}],
+            messages=[
+                {"role": "system", "content": brand_voice_prompt or "Ты профессиональный редактор контента."},
+                {"role": "user", "content": improve_prompt},
+            ],
         )
-        new_body = response.content[0].text.strip()
+        new_body = response.choices[0].message.content.strip()
     except Exception as e:
         logger.error("improve_post: AI error for %s: %s", post_id, e)
         return {"error": str(e)}

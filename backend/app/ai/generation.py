@@ -1,19 +1,18 @@
 """
-GenerationService — генерирует посты через Anthropic API.
+GenerationService — генерирует посты через OpenRouter API.
 Использует Brand Voice system prompt + KB контекст + шаблоны платформ.
 """
 import json
 import logging
 from dataclasses import dataclass
 
-import anthropic
+from openai import OpenAI
 
 from ..config import settings
 from .templates import CONTENT_TYPE_TEMPLATES, PLATFORM_TEMPLATES
 
 logger = logging.getLogger(__name__)
 
-MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 2000
 
 
@@ -26,12 +25,15 @@ class GenerationResult:
 
 class GenerationService:
     def __init__(self):
-        self._client: anthropic.Anthropic | None = None
+        self._client: OpenAI | None = None
 
     @property
-    def client(self) -> anthropic.Anthropic:
+    def client(self) -> OpenAI:
         if not self._client:
-            self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+            self._client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=settings.openrouter_api_key,
+            )
         return self._client
 
     async def generate_post(
@@ -81,13 +83,15 @@ class GenerationService:
 {"Верни JSON: {\"body\": \"...\", \"hashtags\": [...]}" if platform == "instagram" else "Для треда разделяй твиты строкой ---. Каждый твит ≤ 280 символов. Верни только текст." if platform == "x" else "Верни только текст поста."}"""
 
         try:
-            response = self.client.messages.create(
-                model=MODEL,
+            response = self.client.chat.completions.create(
+                model=settings.openrouter_model,
                 max_tokens=MAX_TOKENS,
-                system=brand_voice_prompt or self._default_system_prompt(),
-                messages=[{"role": "user", "content": user_prompt}],
+                messages=[
+                    {"role": "system", "content": brand_voice_prompt or self._default_system_prompt()},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
-            raw = response.content[0].text.strip()
+            raw = response.choices[0].message.content.strip()
         except Exception as e:
             logger.error("Generation failed: %s", e)
             raise

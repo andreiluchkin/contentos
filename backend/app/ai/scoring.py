@@ -1,19 +1,17 @@
 """
-ScoringService — рассчитывает Content Score через Anthropic API.
+ScoringService — рассчитывает Content Score через OpenRouter API.
 5 критериев, weighted average, конкретные issues.
 """
 import json
 import logging
 from dataclasses import dataclass, field
 
-import anthropic
+from openai import OpenAI
 
 from ..config import settings
 from .templates import PLATFORM_TEMPLATES, SCORE_WEIGHTS
 
 logger = logging.getLogger(__name__)
-
-MODEL = "claude-sonnet-4-6"
 
 
 @dataclass
@@ -67,12 +65,15 @@ SCORE_PROMPT = """\
 
 class ScoringService:
     def __init__(self):
-        self._client: anthropic.Anthropic | None = None
+        self._client: OpenAI | None = None
 
     @property
-    def client(self) -> anthropic.Anthropic:
+    def client(self) -> OpenAI:
         if not self._client:
-            self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+            self._client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=settings.openrouter_api_key,
+            )
         return self._client
 
     async def calculate_score(self, body: str, platform: str) -> ScoreResult:
@@ -88,12 +89,12 @@ class ScoringService:
         )
 
         try:
-            response = self.client.messages.create(
-                model=MODEL,
+            response = self.client.chat.completions.create(
+                model=settings.openrouter_model,
                 max_tokens=500,
                 messages=[{"role": "user", "content": prompt}],
             )
-            raw = response.content[0].text.strip()
+            raw = response.choices[0].message.content.strip()
         except Exception as e:
             logger.error("Scoring API call failed: %s", e)
             raise

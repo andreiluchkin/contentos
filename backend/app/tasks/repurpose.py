@@ -85,10 +85,19 @@ async def _transcribe_media(task, job_id: str):
             raise task.retry(exc=e)
 
 
+def _transcribe_with_faster_whisper(audio_path: str) -> str:
+    """Локальная транскрипция через faster-whisper (без внешних API)."""
+    from faster_whisper import WhisperModel
+    from ..config import settings
+
+    model = WhisperModel(settings.whisper_model, device="cpu", compute_type="int8")
+    segments, _ = model.transcribe(audio_path, language="ru")
+    return " ".join(seg.text.strip() for seg in segments)
+
+
 async def _transcribe_youtube(url: str) -> str:
-    """yt-dlp скачивает аудио, Whisper транскрибирует."""
+    """yt-dlp скачивает аудио, faster-whisper транскрибирует локально."""
     import subprocess
-    import openai
 
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = os.path.join(tmpdir, "audio.mp3")
@@ -109,27 +118,17 @@ async def _transcribe_youtube(url: str) -> str:
             raise RuntimeError(f"yt-dlp failed: {result.stderr[:500]}")
 
         if not os.path.exists(out_path):
-            # yt-dlp добавляет расширение
             candidates = [f for f in os.listdir(tmpdir) if f.endswith(".mp3")]
             if not candidates:
                 raise RuntimeError("yt-dlp did not produce an audio file")
             out_path = os.path.join(tmpdir, candidates[0])
 
-        from ..config import settings
-        client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
-        with open(out_path, "rb") as f:
-            response = await client.audio.transcriptions.create(
-                model="whisper-1",
-                file=f,
-                language="ru",
-            )
-        return response.text
+        return _transcribe_with_faster_whisper(out_path)
 
 
 async def _transcribe_file_from_minio(storage_key: str, mime_type: str) -> str:
-    """Скачивает файл из MinIO и транскрибирует через Whisper."""
+    """Скачивает файл из MinIO и транскрибирует локально через faster-whisper."""
     import boto3
-    import openai
     from botocore.config import Config
     from ..config import settings
 
@@ -146,14 +145,7 @@ async def _transcribe_file_from_minio(storage_key: str, mime_type: str) -> str:
         s3.download_fileobj(settings.minio_bucket, storage_key, tmp)
 
     try:
-        client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
-        with open(tmp_path, "rb") as f:
-            response = await client.audio.transcriptions.create(
-                model="whisper-1",
-                file=f,
-                language="ru",
-            )
-        return response.text
+        return _transcribe_with_faster_whisper(tmp_path)
     finally:
         os.unlink(tmp_path)
 
@@ -194,7 +186,7 @@ EXTRACT_PROMPT = """Ты — редактор контента. Тебе дан�
 
 async def _extract_ideas(task, job_id: str):
     import json
-    import anthropic
+    from openai import OpenAI
     from ..database import AsyncSessionLocal as _session_factory
     from ..models import RepurposeJob
     from ..config import settings
@@ -208,16 +200,19 @@ async def _extract_ideas(task, job_id: str):
         await db.commit()
 
         try:
-            client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-            message = await client.messages.create(
-                model="claude-sonnet-4-6",
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=settings.openrouter_api_key,
+            )
+            response = client.chat.completions.create(
+                model=settings.openrouter_model,
                 max_tokens=2000,
                 messages=[{
                     "role": "user",
                     "content": EXTRACT_PROMPT.format(transcription=job.transcription or ""),
                 }],
             )
-            raw = message.content[0].text.strip()
+            raw = response.choices[0].message.content.strip()
 
             # Убираем возможную markdown-обёртку
             if raw.startswith("```"):

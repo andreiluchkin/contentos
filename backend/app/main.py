@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine
 from .models import Base
-from .api import pillars, accounts, ideas, posts, sources, brand_voice, knowledge_base, ai, calendar, repurpose, media, analytics, publishing
+from .api import pillars, accounts, ideas, posts, sources, brand_voice, knowledge_base, ai, calendar, repurpose, media, analytics, publishing, auth_routes
 
 
 @asynccontextmanager
@@ -33,6 +33,7 @@ app.add_middleware(
 
 API_PREFIX = "/api/v1"
 
+app.include_router(auth_routes.router, prefix=API_PREFIX)
 app.include_router(pillars.router, prefix=API_PREFIX)
 app.include_router(accounts.router, prefix=API_PREFIX)
 app.include_router(ideas.router, prefix=API_PREFIX)

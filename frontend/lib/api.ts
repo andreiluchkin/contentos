@@ -1,15 +1,43 @@
 import axios from "axios"
+import { getAccessToken, refreshAccessToken, clearAccessToken } from "./auth"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
-const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN ?? ""
 
 export const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
-  headers: {
-    "Content-Type": "application/json",
-    ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
-  },
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 })
+
+// Подставляем access token в каждый запрос
+api.interceptors.request.use((config) => {
+  const token = getAccessToken()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+// На 401 — пробуем обновить токен, потом повторяем запрос
+let _refreshing: Promise<string | null> | null = null
+
+api.interceptors.response.use(
+  (r) => r,
+  async (error) => {
+    const original = error.config
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true
+      if (!_refreshing) _refreshing = refreshAccessToken().finally(() => { _refreshing = null })
+      const token = await _refreshing
+      if (token) {
+        original.headers.Authorization = `Bearer ${token}`
+        return api(original)
+      }
+      // Refresh не удался — редирект на логин
+      clearAccessToken()
+      if (typeof window !== "undefined") window.location.href = "/login"
+    }
+    return Promise.reject(error)
+  }
+)
 
 // --- Ideas ---
 export const ideasApi = {

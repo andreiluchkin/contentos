@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 import {
   Inbox,
   LayoutList,
@@ -14,9 +15,11 @@ import {
   BarChart2,
   ClipboardCheck,
   Settings,
+  LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { publishingApi } from "@/lib/api"
+import { logout } from "@/lib/auth"
 
 const NAV_ITEMS = [
   { href: "/inbox", icon: Inbox, label: "Inbox" },
@@ -32,6 +35,12 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await logout()
+    router.push("/login")
+  }
 
   const { data: reviewQueue = [] } = useQuery<unknown[]>({
     queryKey: ["review-queue"],
@@ -73,8 +82,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Settings */}
-      <div className="px-3 py-3 border-t border-border">
+      {/* Settings + Logout */}
+      <div className="px-3 py-3 border-t border-border space-y-0.5">
         <Link
           href="/settings"
           className={cn(
@@ -85,6 +94,13 @@ export function Sidebar() {
           <Settings size={16} strokeWidth={1.75} />
           <span>Настройки</span>
         </Link>
+        <button
+          onClick={handleLogout}
+          className="sidebar-link w-full text-left text-ink-secondary hover:text-red-500"
+        >
+          <LogOut size={16} strokeWidth={1.75} />
+          <span>Выйти</span>
+        </button>
       </div>
     </aside>
   )

@@ -38,8 +38,16 @@ class Settings(BaseSettings):
     x_client_id: str = ""
     x_client_secret: str = ""
 
-    # Auth
+    # Legacy static token (оставляем для совместимости)
     api_secret_token: str = "dev-token"
+
+    # JWT Auth
+    jwt_secret: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+    refresh_token_expire_days: int = 30
+    admin_username: str = "admin"
+    admin_password_hash: str = ""  # bcrypt hash
 
     # Encryption key для токенов соцсетей (Fernet)
     encryption_key: str = ""
